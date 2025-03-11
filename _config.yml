@@ -1,0 +1,18 @@
+# Setup
+title:        MMSafe-PO
+tagline:      Towards Harmless Multimodal Assistants with Blind Preference Optimization
+baseurl:      ""
+paginate:     1
+locale:       "en"
+
+# About/contact
+author:
+  name:       Lu Yang
+  url:        https://lu-yang666.github.io/ 
+
+# Gems
+gems:
+  - jekyll-paginate
+
+#Others
+markdown: kramdown

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta charset="UTF-8">
+  <title>MMSafe-PO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157878">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/cayman.css">
+</head>
+
+  <body>
+    <section class="page-header">
+  <h1 class="project-name">MMSafe-PO</h1>
+  <h2 class="project-tagline">Towards Harmless Multimodal Assistants with Blind Preference Optimization</h2>
+  <a href="https://huggingface.co/datasets/Downton/MMSafe-PO" class="btn">View on Huggingface</a>
+  <a href="https://github.com/Lu-Yang666/MMsafe-PO" class="btn">View on GitHub</a>
+</section>
+
+    <section class="main-content">
+      
+      <div id="home">
+  <h1 style="text-align: center;">Abstract</h1>
+  <p>
+    Multimodal Large Language Models (MLLMs) have demonstrated impressive capabilities in multimodal understanding, reasoning, and interaction. Given the extensive applications of MLLMs, the associated safety issues have become increasingly critical. Due to the effectiveness of preference optimization in aligning MLLMs with human preferences, there is an urgent need for safety-related preference data for MLLMs. To address this, we construct the MMSafe-PO preference dataset towards harmless multimodal assistants, featuring multimodal instructions, the conversational format, and ranked paired responses from human feedback. We also identify two insightful observations: modality co-defense and modality cheating, which illustrate that MLLMs possess a certain level of inherent defense while still presenting unique safety challenges. Based on these observations, we propose the Blind Preference Optimization (BPO) approach. Comprehensive experiments on three benchmarks show that BPO effectively enhances the safety capabilities of MLLMs. Notably, BPO significantly improves the safety rate of the base MLLM by 45.0%, outperforming the DPO approach. Additionally, applying BPO to the MMSafe-PO dataset greatly reduces the base MLLM's unsafe rate on other safety benchmarks (14.5% on MM-SafetyBench and 82.9% on HarmEval), demonstrating the effectiveness and robustness of both the dataset and the approach.
+  </p>
+  <p style="color: red;">
+    WARNING: This paper includes images and text that may be considered offensive.
+  </p>
+
+  <h1 style="text-align: center;">MMSafe-PO Dataset</h1>
+
+  <div style="text-align: center;">
+    <img src="assets/dataset_comparison.png" alt="Example Image" 
+         style="width: 100%; max-width: 900px; border-radius: 10px;">
+    <p style="font-style: italic; color: gray;">
+      Table 1: Comparison of MMSafe-PO with datasets on preference optimization and the safety of MLLMs. “-” denotes inapplicable results. MMSafe-PO features multimodal instructions, the conversational format, and paired responses ranked by humans.
+    </p>
+  </div>
+  
+  <h2 style="text-align: center;">MMSafe-PO Construction</h2>
+  <div style="text-align: center; margin-top: 20px;">
+    <img src="assets/pipeline_small_low_compressed_00.jpg" alt="Example Image" 
+         style="width: 100%; max-width: 900px; border-radius: 10px;" id="figure1">
+    <p style="font-style: italic; color: gray;">
+      Figure 1: Overall pipeline for MMSafe-PO dataset construction.
+    </p>
+  </div>
+  
+<p>
+  We construct the MMSafe-PO dataset through modality interpretation, and an overview of this process is shown in <a href="#figure1">Figure 1</a>.
+  <ul>
+    <li>
+      <strong>Text-only preference data collection.</strong> Considering the quantity, quality, and the harmless alignment objective, we chose the Anthropic-HH dataset as the candidate preference data. Released by Anthropic, this dataset is exceptionally rare in the academic area because it includes genuine human feedback. Anthropic-HH addresses both helpfulness and harmlessness objectives and encompasses a diverse range of instructions from interactions between large language models and humans. Therefore, we can obtain high-quality multimodal preference data by transforming text-only instructions into multimodal ones.
+    </li>
+  
+    <li>
+      <strong>Entity recognition and image matching.</strong> Our goal is to match images relevant to the instructions. To achieve this, we first recognize the entities within the instructions and then match images to these entities. Specifically, we utilize a mature entity recognition library 
+      <a href="https://huggingface.co/dbmdz/bert-large-cased-finetuned-conll03-english">bert-large-cased-finetuned-conll03-english</a> to identify all entities and their attributes (e.g., person, organization, location) within the user instructions. Subsequently, we search for images relevant to the identified entities. We use the 
+      <a href="https://en.wikipedia.org/w/api.php">Wikipedia API</a> to retrieve images of the entities. If this search fails, we supplement it with the 
+      <a href="https://kgsearch.googleapis.com/v1/entities:search">Google Knowledge Graph API</a>. Ultimately, for each identified entity, we obtain the most relevant image.
+    </li>
+  
+    <li>
+      <strong>Instruction rephrasing.</strong> Given the original textual instruction, the identified entity, and the matched image, we aim to rewrite them as corresponding multimodal instructions. Since LLMs have been extensively used for multimodal instruction generation, we believe that simply rewriting the textual instruction as the text component of multimodal instructions is well within the capabilities of LLMs. Specifically, we use Qwen-VL-Chat to rewrite the textual instructions.
+    </li>
+  </ul>
+</p>
+
+<h2 style="text-align: center;">MMSafe-PO Analysis</h2>
+<style>
+  .image-container {
+    display: flex;
+    gap: 10px;
+    max-width: 1000px; /* 控制整体最大宽度 */
+    margin: auto;
+  }
+
+  .left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 45%; /* 左侧较小 */
+  }
+
+  .right-column {
+    width: 55%; /* 右侧图片放大 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .image-box {
+    text-align: center;
+  }
+
+  .image-box img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  .image-box figcaption {
+    font-size: 14px;
+    color: gray;
+    text-align: center;
+    margin-top: 5px;
+  }
+</style>
+
+<div class="image-container">
+  <div class="left-column">
+    <figure class="image-box" id="table2">
+      <img src="assets/statistics.png" alt="Top Left Image">
+      <figcaption>Table 2: Statistics of the MMSafe-PO Dataset. “Inst” represents the instruction and “Conv.” represents conversation history.</figcaption>
+    </figure>
+    <figure class="image-box" id="figure2">
+      <img src="assets/distribution.png" alt="Bottom Left Image">
+      <figcaption>Figure 2: (a) Illustration of the types of images used in multimodal instructions. (b) Distribution of conversation turns.</figcaption>
+    </figure>
+  </div>
+  <div class="right-column">
+    <figure class="image-box" id="figure3">
+      <img src="assets/Hierarchical Safety Category_00.jpg" alt="Right Image">
+      <figcaption>Figure 3: Hierarchical category analysis on the safety issues in the MMSafe-PO dataset.</figcaption>
+    </figure>
+  </div>
+</div>
+
+<ul>
+  <li>
+    <strong>Statistical analysis.</strong> MMSafe-PO comprises 5,667 multimodal instructions, each containing a text and a corresponding image. For each instruction, there is a chosen response and a rejected response. Approximately 50.49% of instructions include chat history, as detailed in <a href="#table2">Table 2</a>. It is important to note that we adhere to the original train and test split of the Anthropic-HH dataset, rather than creating a new split. This is to avoid potential data leaks because the LLM backbone of the MLLM may have been trained on the Anthropic-HH training set. The dataset statistics are summarized in <a href="#table2">Table 2</a>.
+  </li>
+
+  <li>
+    <strong>Multimodal instruction analysis.</strong> On average, there are about 23.51 tokens in the multimodal instructions without the chat history. The input length increases to 145.13 when concatenated with the chat history. This extended length highlights the challenge of understanding the instructions from multimodal assistants. Additionally, we roughly categorize the identified entities into types such as people, organizations, and locations to illustrate the types of images included in the multimodal instructions, as shown in <a href="#figure2">Figure 2</a>.
+  </li>
+
+  <li>
+    <strong>Hierarchical category analysis.</strong> Since the multimodal instructions pertain to safety issues, it is necessary to analyze and categorize these issues. Following the work <a href="#ref-SPAVL">[1]</a>, we establish a classification system. This hierarchical classification consists of three levels, with the first level including categories such as “Representation & Toxicity Harms,” “Malicious Use, Information & Safety Harms,” “Misinformation Harms,” “Human Autonomy & Integrity Harms,” and “Socioeconomic Harms.” There are approximately 15 categories at the second level and 50 categories at the third level. We visualize the distribution of categories in <a href="#figure3">Figure 3</a>. It can be observed that MMSafe-PO covers various safety categories and exhibits a diverse distribution.
+  </li>
+</ul>
+
+<h1 style="text-align: center;">Safety Observation</h1>
+<div style="text-align: center; margin-top: 20px;">
+  <img src="assets/example_modal_defense_cheating_00.jpg" alt="Example Modality Image" 
+       style="width: 100%; max-width: 800px; border-radius: 10px;" id="figure4">
+  <p style="font-style: italic; color: gray;">
+    Figure 4: Illustration of modality co-dense and modality cheating in MLLMs. The MLLM provides correct responses to the first two instructions but fails to  answer the third instruction.
+  </p>
+</div>
+
+<p>
+  We input the above multimodal instructions into MLLMs to observe their safety, leading to two interesting observations, modality co-defense and modality cheating.
+
+  <div style="text-align: center; margin-top: 20px;">
+    <img src="assets/safety_observation_00.jpg" alt="Example Modality Image 2" 
+         style="width: 100%; max-width: 900px; border-radius: 10px;" id="figure5">
+    <p style="font-style: italic; color: gray;">
+      Figure 5: Quantitative analysis of modality co-defense and modality cheating. (a) shows the safety transfer across language-to-vision modalities and highlights the potential for improvement. (b) demonstrates the language modality can cheat and mislead the MLLM into providing incorrect responses, even when given safe instructions.
+    </p>
+  </div>
+
+  <ul>
+    <li>
+      <strong>Modality co-defense.</strong> In MMSafe-PO, each multimodal instruction is derived from a corresponding textual instruction. To evaluate the defense capabilities of MLLM, we input both the multimodal instructions and their corresponding textual instructions to compare the results pairwise. Human evaluators then assess each model's response as either safe or unsafe. The results are summarized in <a href="#figure5">Figure 5(a)</a>. It is observed that although LLaVA has not undergone specific multimodal safety training, it still exhibits a certain level of safety when handling multimodal instructions. We believe this is because, after alignment training between vision and text, the terms in the text and their corresponding visual information are closely related in the implicit space.
+      We refer to this phenomenon as <em>modality co-defense</em>. Besides, it is noted that modality co-defense is not a catch-all solution. The safety capabilities of a standalone LLM cannot cover all multimodal scenarios <a href="#ref-wang2024cross">[2]</a>, and this indicates the necessity for safety improvement.
+    </li>
+    <li>
+      <strong>Modality cheating.</strong> The multimodal instructions in MMSafe-PO are in a combination of their textual and corresponding visual components. We selected ten unsafe multimodal instructions to which the MLLM could provide correct responses, and then we transformed these unsafe instructions into safe ones by replacing the images with safe alternatives. We input the pairs of multimodal instructions into the MLLM to compare the model's responses. The results are summarized in <a href="#figure5">Figure 5(b)</a>.
+      It was found that the pass rate decreased by 50% with safe multimodal instructions. This means that for normal user instructions, the MLLM incorrectly identified them as safety issues, resulting in its inability to respond to the user's instructions. We speculate that this phenomenon is due to the inherent safety strategies of the LLM, which make the MLLM particularly sensitive to certain text patterns related to safety. The underlying reason is that the MLLM's modeling of visual information is still relatively weak, meaning it doesn't truly process visual information. We refer to this phenomenon as <em>modality cheating</em>, where the text modality misleads the MLLM.
+    </li>
+  </ul>
+</p>
+
+<h1 style="text-align: center;">MMSafe-PO Method</h1>
+<p>The phenomenon of modality cheating essentially stems from MLLM's disregard for visual information. Despite the effectiveness of DPO, it is designed to learn preferences for LLMs and cannot perfectly align with the preference learning inherent to MLLM. Inspired by research on bias in visual question answering and debias efforts <a href="#cho2023generative">[3]</a>, we approach modality cheating from a bias-perspective and propose Blind Preference Optimization (BPO) for MLLMs.</p>
+<p>Specifically, we remove the image from the multimodal instruction <i>x</i>, resulting in <i>x<sub>b</sub></i>, and input <i>x<sub>b</sub></i> into the MLLM <i>&#960;<sub>ref</sub> (y|x)</i> to obtain the response <i>y<sub>b</sub></i>. This process can be metaphorically described as ‘blinding’ the MLLM, allowing it to generate a response based solely on the text portion of the multimodal instruction. We assume that the response <i>y<sub>b</sub></i> is inferior to <i>y<sub>w</sub></i> due to the absence of visual information, and we could organize the preference pairs of <i>y<sub>w</sub></i> and <i>y<sub>b</sub></i> accordingly. The MLLM can then be optimized as follows,</p>
+<div style="text-align: center; margin-top: 20px;">
+  <img src="assets/equation.png" alt="Example Modality Image 2" 
+       style="width: 80%; max-width: 800px; border-radius: 10px;" id="figure6">
+</div>
+
+<p>The MLLM is expected to enhance its alignment with visual information by leveraging the differences between <i>y<sub>w</sub></i> and <i>y<sub>b</sub></i>, as these differences primarily arise from the presence or absence of visual input. This process can also be seen as a debiasing operation to eliminate language bias in MLLMs. It is noted that the original terms <i>y<sub>w</sub></i> and <i>y<sub>l</sub></i> are still retained as supplementary information.</p>
+
+<h1 style="text-align: center;">MMSafe-PO Experiments</h1>
+<div style="text-align: center; margin-top: 20px;">
+  <img src="assets/performance.png" alt="Example Modality Image 2" 
+       style="width: 80%; max-width: 800px; border-radius: 10px;" id="table3">
+  <p style="font-style: italic; color: gray;">
+    Table 3: Safety performance of open-released MLLMs and LLaVA after preference optimization. ‘$\Delta$\%’ denotes the relative improvement over the backbone model.
+  </p>
+</div>
+<p>The test set of MMSafe-PO can serve as a benchmark to measure the safety rate of MLLMs. Following previous work <a href="#ref-wang2024cross">[2]</a>, we employed two metrics:</p>
+<ul>
+  <li><strong>Safety Rate:</strong> GPT-4V is used in place of human evaluators to judge whether each response is safe or not, and the safety rate is calculated as the proportion of safe responses.</li>
+  <li><strong>Pairwise Accuracy:</strong> Given the evaluation costs associated with the generation task, the selected and rejected candidate responses are provided to the MLLM to assess its ability to determine whether the candidates are safe.</li>
+</ul>
+<p>
+  The results of various MLLMs and our BPO method are presented in <a href="#table3">Table 3</a>. First, we found consistency between the safety rate and pairwise accuracy for most MLLMs. That is, a high safety rate generally corresponds to higher pairwise accuracy. An exception to this is Openflamingo, which has a relatively high pairwise accuracy but a low safety rate. This may be because the underlying LLM in Openflamingo is somewhat limited, affecting its performance in generative tasks. Second, DPO can increase LLaVA's safety rate from 0.61 to 0.82 using our MMSafe-PO training set. This clearly demonstrates the importance of our dataset, as it provides high-quality multimodal preference data for the community. Third, compared with DPO, our proposed BPO can further enhance LLaVA's safety. This improvement stems from our insightful observations of MLLMs, which motivated us to design additional rejected responses by blinding the MLLMs.
+</p>
+<div style="text-align: center; margin-top: 20px;">
+  <img src="assets/other_benchmark.png" alt="Example Modality Image 2" 
+       style="width: 100%; max-width: 900px; border-radius: 10px;" id="table4">
+  <p style="font-style: italic; color: gray;">
+    Table 4: Safety performance of models trained on the MMSafe-PO training set and evaluated on MM-SafetyBench and SPA-VL HarmEval, measured by attack success rate (ASR) and unsafe rate (USR), respectively. ‘$\Delta$\%’ denotes the relative improvement against the backbone.
+  </p>
+</div>
+<p>To further verify the effectiveness of our conducted MMSafe-PO dataset and our proposed BPO approach, we evaluate the LLaVA with BPO on other MLLM safety benchmarks, MM-SafetyBench and SPA-VL HarmEval. The corresponding attack success rate (ASR) and unsafe rate (USR) are employed, while the results are summarized in Table <a href="#table4">Table 4</a>.</p>
+<p>On the one hand, both DPO and BPO can enhance the MLLM through training on our MMSafe-PO dataset. This verifies the quality of our dataset, demonstrating its effectiveness even out-of-domain. On the other hand, BPO achieves greater improvement compared to DPO, highlighting BPO's robustness across different scenarios. It is also noteworthy that the performance gap between BPO and DPO is larger than that observed on MMSafe-PO. This is because BPO functions more like on-policy sampling, which allows it to perform better out-of-domain.</p>
+
+
+<h1 id="references">References</h1>
+<ul>
+  <li id="ref-SPAVL">
+    <a href="https://arxiv.org/abs/2406.12030" target="_blank">
+      [1] SPA-VL: A Comprehensive Safety Preference Alignment Dataset for Vision Language Model
+    </a> 
+  </li>
+  <li id="ref-wang2024cross">
+    <a href="https://arxiv.org/abs/2406.15279" target="_blank">
+      [2] Safe Inputs but Unsafe Output: Benchmarking Cross-modality Safety Alignment of Large Vision-Language Models.
+    </a> 
+  </li>
+  <li id="cho2023generative">
+    <a href="https://arxiv.org/abs/2208.00690" target="_blank">
+      [3] Generative Bias for Robust Visual Question Answering.
+    </a> 
+  </li>
+</ul>
+
+</div>
+
+      <footer class="site-footer">
+  <span class="site-footer-owner"><a href="http://localhost:4000">MMSafe-PO</a> is maintained by <a href="https://lu-yang666.github.io/">Lu Yang</a>.</span>
+  <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a>.</span>
+</footer>
+
+
+    </section>
+
+  </body>
+</html>

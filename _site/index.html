@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta charset="UTF-8">
+  <title>MMSafe-PO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157878">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/cayman.css">
+</head>
+
+  <body>
+    <section class="page-header">
+  <h1 class="project-name">MMSafe-PO</h1>
+  <h2 class="project-tagline">Towards Harmless Multimodal Assistants with Blind Preference Optimization</h2>
+  <a href="https://huggingface.co/datasets/Downton/MMSafe-PO" class="btn">View on Huggingface</a>
+  <a href="https://github.com/Lu-Yang666/MMsafe-PO" class="btn">View on GitHub</a>
+</section>
+
+    <section class="main-content">
+      
+      <div id="home">
+  <h1 style="text-align: center;">Abstract</h1>
+  <p>
+    Multimodal Large Language Models (MLLMs) have demonstrated impressive capabilities in multimodal understanding, reasoning, and interaction. Given the extensive applications of MLLMs, the associated safety issues have become increasingly critical. Due to the effectiveness of preference optimization in aligning MLLMs with human preferences, there is an urgent need for safety-related preference data for MLLMs. To address this, we construct the MMSafe-PO preference dataset towards harmless multimodal assistants, featuring multimodal instructions, the conversational format, and ranked paired responses from human feedback. We also identify two insightful observations: modality co-defense and modality cheating, which illustrate that MLLMs possess a certain level of inherent defense while still presenting unique safety challenges. Based on these observations, we propose the Blind Preference Optimization (BPO) approach. Comprehensive experiments on three benchmarks show that BPO effectively enhances the safety capabilities of MLLMs. Notably, BPO significantly improves the safety rate of the base MLLM by 45.0%, outperforming the DPO approach. Additionally, applying BPO to the MMSafe-PO dataset greatly reduces the base MLLM's unsafe rate on other safety benchmarks (14.5% on MM-SafetyBench and 82.9% on HarmEval), demonstrating the effectiveness and robustness of both the dataset and the approach.
+  </p>
+  <p style="color: red;">
+    WARNING: This paper includes images and text that may be considered offensive.
+  </p>
+
+  <h1 style="text-align: center;">MMSafe-PO Dataset</h1>
+
+  <div style="text-align: center;">
+    <img src="assets/dataset_comparison.png" alt="Example Image" 
+         style="width: 100%; max-width: 900px; border-radius: 10px;">
+    <p style="font-style: italic; color: gray;">
+      Table 1: Comparison of MMSafe-PO with datasets on preference optimization and the safety of MLLMs. “-” denotes inapplicable results. MMSafe-PO features multimodal instructions, the conversational format, and paired responses ranked by humans.
+    </p>
+  </div>
+  
+  <h2 style="text-align: center;">MMSafe-PO Construction</h2>
+  <div style="text-align: center; margin-top: 20px;">
+    <img src="assets/pipeline_small_low_compressed_00.jpg" alt="Example Image" 
+         style="width: 100%; max-width: 900px; border-radius: 10px;" id="figure1">
+    <p style="font-style: italic; color: gray;">
+      Figure 1: Overall pipeline for MMSafe-PO dataset construction.
+    </p>
+  </div>
+  
+<p>
+  We construct the MMSafe-PO dataset through modality interpretation, and an overview of this process is shown in <a href="#figure1">Figure 1</a>.
+  <ul>
+    <li>
+      <strong>Text-only preference data collection.</strong> Considering the quantity, quality, and the harmless alignment objective, we chose the Anthropic-HH dataset as the candidate preference data. Released by Anthropic, this dataset is exceptionally rare in the academic area because it includes genuine human feedback. Anthropic-HH addresses both helpfulness and harmlessness objectives and encompasses a diverse range of instructions from interactions between large language models and humans. Therefore, we can obtain high-quality multimodal preference data by transforming text-only instructions into multimodal ones.
+    </li>
+  
+    <li>
+      <strong>Entity recognition and image matching.</strong> Our goal is to match images relevant to the instructions. To achieve this, we first recognize the entities within the instructions and then match images to these entities. Specifically, we utilize a mature entity recognition library 
+      <a href="https://huggingface.co/dbmdz/bert-large-cased-finetuned-conll03-english">bert-large-cased-finetuned-conll03-english</a> to identify all entities and their attributes (e.g., person, organization, location) within the user instructions. Subsequently, we search for images relevant to the identified entities. We use the 
+      <a href="https://en.wikipedia.org/w/api.php">Wikipedia API</a> to retrieve images of the entities. If this search fails, we supplement it with the 
+      <a href="https://kgsearch.googleapis.com/v1/entities:search">Google Knowledge Graph API</a>. Ultimately, for each identified entity, we obtain the most relevant image.
+    </li>
+  
+    <li>
+      <strong>Instruction rephrasing.</strong> Given the original textual instruction, the identified entity, and the matched image, we aim to rewrite them as corresponding multimodal instructions. Since LLMs have been extensively used for multimodal instruction generation, we believe that simply rewriting the textual instruction as the text component of multimodal instructions is well within the capabilities of LLMs. Specifically, we use Qwen-VL-Chat to rewrite the textual instructions.
+    </li>
+  </ul>
+</p>
+
+<h2 style="text-align: center;">MMSafe-PO Analysis</h2>
+<style>
+  .image-container {
+    display: flex;
+    gap: 10px;
+    max-width: 1000px; /* 控制整体最大宽度 */
+    margin: auto;
+  }
+
+  .left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 45%; /* 左侧较小 */
+  }
+
+  .right-column {
+    width: 55%; /* 右侧图片放大 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .image-box {
+    text-align: center;
+  }
+
+  .image-box img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  .image-box figcaption {
+    font-size: 14px;
+    color: gray;
+    text-align: center;
+    margin-top: 5px;
+  }
+</style>
+
+<div class="image-container">
+  <div class="left-column">
+    <figure class="image-box" id="table2">
+      <img src="assets/statistics.png" alt="Top Left Image">
+      <figcaption>Table 2: Statistics of the MMSafe-PO Dataset. “Inst” represents the instruction and “Conv.” represents conversation history.</figcaption>
+    </figure>
+    <figure class="image-box" id="figure2">
+      <img src="assets/distribution.png" alt="Bottom Left Image">
+      <figcaption>Figure 2: (a) Illustration of the types of images used in multimodal instructions. (b) Distribution of conversation turns.</figcaption>
+    </figure>
+  </div>
+  <div class="right-column">
+    <figure class="image-box" id="figure3">
+      <img src="assets/Hierarchical Safety Category_00.jpg" alt="Right Image">
+      <figcaption>Figure 3: Hierarchical category analysis on the safety issues in the MMSafe-PO dataset.</figcaption>
+    </figure>
+  </div>
+</div>
+
+<ul>
+  <li>
+    <strong>Statistical analysis.</strong> MMSafe-PO comprises 5,667 multimodal instructions, each containing a text and a corresponding image. For each instruction, there is a chosen response and a rejected response. Approximately 50.49% of instructions include chat history, as detailed in <a href="#table2">Table 2</a>. It is important to note that we adhere to the original train and test split of the Anthropic-HH dataset, rather than creating a new split. This is to avoid potential data leaks because the LLM backbone of the MLLM may have been trained on the Anthropic-HH training set. The dataset statistics are summarized in <a href="#table2">Table 2</a>.
+  </li>
+
+  <li>
+    <strong>Multimodal instruction analysis.</strong> On average, there are about 23.51 tokens in the multimodal instructions without the chat history. The input length increases to 145.13 when concatenated with the chat history. This extended length highlights the challenge of understanding the instructions from multimodal assistants. Additionally, we roughly categorize the identified entities into types such as people, organizations, and locations to illustrate the types of images included in the multimodal instructions, as shown in <a href="#figure2">Figure 2</a>.
+  </li>
+
+  <li>
+    <strong>Hierarchical category analysis.</strong> Since the multimodal instructions pertain to safety issues, it is necessary to analyze and categorize these issues. Following the work <a href="#ref-SPAVL">[1]</a>, we establish a classification system. This hierarchical classification consists of three levels, with the first level including categories such as “Representation & Toxicity Harms,” “Malicious Use, Information & Safety Harms,” “Misinformation Harms,” “Human Autonomy & Integrity Harms,” and “Socioeconomic Harms.” There are approximately 15 categories at the second level and 50 categories at the third level. We visualize the distribution of categories in <a href="#figure3">Figure 3</a>. It can be observed that MMSafe-PO covers various safety categories and exhibits a diverse distribution.
+  </li>
+</ul>
+
+<h1 id="references">References</h1>
+<ul>
+  <li id="ref-SPAVL">
+    <a href="https://arxiv.org/abs/2406.12030" target="_blank">
+      [1] SPA-VL: A Comprehensive Safety Preference Alignment Dataset for Vision Language Model
+    </a> 
+  </li>
+  <li id="ref-wang2024cross">
+    <a href="https://arxiv.org/abs/2406.15279" target="_blank">
+      [2] Safe Inputs but Unsafe Output: Benchmarking Cross-modality Safety Alignment of Large Vision-Language Models.
+    </a> 
+  </li>
+  <li id="cho2023generative">
+    <a href="https://arxiv.org/abs/2208.00690" target="_blank">
+      [3] Generative Bias for Robust Visual Question Answering.
+    </a> 
+  </li>
+</ul>
+
+</div>
+
+      <footer class="site-footer">
+  <span class="site-footer-owner"><a href="http://localhost:4000">MMSafe-PO</a> is maintained by <a href="https://lu-yang666.github.io/">Lu Yang</a>.</span>
+  <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a>.</span>
+</footer>
+
+
+    </section>
+
+  </body>
+</html>
